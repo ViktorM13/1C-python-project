@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}IT Профессии{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>1C-python-project</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="{% url 'professions:index' %}">Главная</a></li>
+            <li><a href="{% url 'professions:general_stats' %}">Общая статистика</a></li>
+            <li><a href="{% url 'professions:demand' %}">Востребованность</a></li>
+            <li><a href="{% url 'professions:geography' %}">География</a></li>
+            <li><a href="{% url 'professions:skills' %}">Навыки</a></li>
+            <li><a href="{% url 'professions:latest_jobs' %}">Последние вакансии</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        Малкеров Виктор Евгеньевич, РИ-231003
+    </footer>
+</body>
+</html>

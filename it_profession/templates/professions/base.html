@@ -6,13 +6,13 @@
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header class="bg-primary text-white py-3">
         <div class="container-fluid">
             <h1 class="h3 mb-0">1C</h1>
         </div>
     </header>
-    <div class="container-fluid">
+    <div class="container-fluid flex-grow-1">
         <div class="row">
             <nav class="col-md-3 col-lg-2 d-none d-md-block bg-light sidebar">
                 <div class="sidebar-sticky pt-3">
@@ -31,14 +31,11 @@
             </main>
         </div>
     </div>
-    <footer class="bg-dark text-white text-center py-3">
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
         <div class="container">
             Малкеров Виктор Евгеньевич, РИ-231003
         </div>
     </footer>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

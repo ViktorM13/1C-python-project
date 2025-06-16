@@ -5,6 +5,9 @@
 {% block content %}
   <h2>Профессия: 1С‑разработчик</h2>
   <p>
+
+  </p>
+  <p>
     1С‑разработчик — это специалист, занимающийся разработкой, внедрением, сопровождением и поддержкой программных решений на платформе «1С:Предприятие». Данная профессия сочетает в себе знания предметной области (бухгалтерского учёта, управления персоналом, складского учёта и т. п.) и навыки программирования на встроенном языке 1С, а также умение интегрироваться с внешними системами.
   </p>
   <p>
@@ -19,12 +22,49 @@
   <p>
     Для успешного старта в профессии рекомендуется изучить официальную документацию «1С:Предприятия», пройти курсы по разработке на платформе 1С, освоить SQL и основы предметной области. Со временем важно развивать навыки коммуникации, умение работать в команде и ориентироваться в новых технологиях (DevOps, контейнеризация, BI‑аналитика).
   </p>
-  <!-- Добавьте ещё текст, чтобы получить не менее 2000 знаков -->
   <p>
     1С‑разработка требует постоянного совершенствования: обновления платформы, смена законодательных требований по учёту, налогам и кадрам. Разработчик должен быть внимателен к деталям, уметь документировать решения и писать понятный код. Современные инструменты — платформы управляемого приложения, тонкий и толстый клиенты, веб‑клиент — расширяют возможности, но также требуют адаптации подходов к разработке и тестированию.
   </p>
   <p>
     В сумме описание профессии охватывает все ключевые аспекты: от технических (язык 1С, SQL, интеграции) до социальных (работа с пользователями, заказчиками). Это позволяет увидеть, что 1С‑разработчик — не просто программист, а универсальный эксперт, соединяющий IT‑знания и бизнес‑логики.
   </p>
-  <img src="https://via.placeholder.com/800x400" alt="1С‑разработка" class="img-fluid mt-4">
+  {% load static %}
+  <div class="slider" style="position: relative; width: 100%; max-width: 800px; margin: 20px auto; overflow: hidden;">
+    <div class="slides" style="display: flex; transition: transform 0.5s ease;">
+      <img src="{% static 'profession/images/1.png' %}" class="slide" style="min-width: 100%;" alt="Слайд 1">
+      <img src="{% static 'profession/images/2.png' %}" class="slide" style="min-width: 100%;" alt="Слайд 2">
+      <img src="{% static 'profession/images/3.png' %}" class="slide" style="min-width: 100%;" alt="Слайд 3">
+    </div>
+    <button id="prevBtn" style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%);">&#10094;</button>
+    <button id="nextBtn" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%);">&#10095;</button>
+  </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const slidesContainer = document.querySelector('.slides');
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    let currentIndex = 0;
+
+    function updateSlider() {
+      const width = slides[0].clientWidth;
+      slidesContainer.style.transform = `translateX(${-currentIndex * width}px)`;
+    }
+
+    prevBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex > 0) ? currentIndex - 1 : slides.length - 1;
+      updateSlider();
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentIndex = (currentIndex < slides.length - 1) ? currentIndex + 1 : 0;
+      updateSlider();
+    });
+
+    window.addEventListener('resize', updateSlider);
+  });
+</script>
 {% endblock %}

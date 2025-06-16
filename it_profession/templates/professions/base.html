@@ -2,30 +2,43 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}IT Профессии{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <header>
-        <h1>1C-python-project</h1>
+    <header class="bg-primary text-white py-3">
+        <div class="container-fluid">
+            <h1 class="h3 mb-0">1C</h1>
+        </div>
     </header>
-
-    <nav>
-        <ul>
-            <li><a href="{% url 'professions:index' %}">Главная</a></li>
-            <li><a href="{% url 'professions:general_stats' %}">Общая статистика</a></li>
-            <li><a href="{% url 'professions:demand' %}">Востребованность</a></li>
-            <li><a href="{% url 'professions:geography' %}">География</a></li>
-            <li><a href="{% url 'professions:skills' %}">Навыки</a></li>
-            <li><a href="{% url 'professions:latest_jobs' %}">Последние вакансии</a></li>
-        </ul>
-    </nav>
-
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-
-    <footer>
-        Малкеров Виктор Евгеньевич, РИ-231003
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-3 col-lg-2 d-none d-md-block bg-light sidebar">
+                <div class="sidebar-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="{% url 'professions:index' %}">Главная</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'professions:general_stats' %}">Общая статистика</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'professions:demand' %}">Востребованность</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'professions:geography' %}">География</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'professions:skills' %}">Навыки</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'professions:latest_jobs' %}">Последние вакансии</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4 py-4">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    <footer class="bg-dark text-white text-center py-3">
+        <div class="container">
+            Малкеров Виктор Евгеньевич, РИ-231003
+        </div>
     </footer>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

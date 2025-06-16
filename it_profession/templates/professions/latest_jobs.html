@@ -3,19 +3,33 @@
 {% block title %}Последние вакансии{% endblock %}
 
 {% block content %}
-<h2>Последние вакансии</h2>
-<ul>
-    <!-- Перебрать вакансии из контекста -->
-    {% for job in latest_jobs %}
-    <li>
-        <h3>{{ job.title }}</h3>
-        <p>{{ job.description }}</p>
-        <p>Навыки: {{ job.skills|join:', ' }}</p>
-        <p>Компания: {{ job.company }}</p>
-        <p>Оклад: {{ job.salary }}</p>
-        <p>Регион: {{ job.region }}</p>
-        <p>Дата публикации: {{ job.published_at }}</p>
-    </li>
-    {% endfor %}
-</ul>
+  <h2>Вакансии за последние 24 часа:</h2>
+
+  {% if latest_jobs %}
+    <ul class="list-unstyled">
+      {% for job in latest_jobs %}
+        <li class="mb-4 p-3 border rounded">
+          <h3><a href="{{ job.url }}" target="_blank">{{ job.title }}</a></h3>
+          <p><strong>Компания:</strong> {{ job.company }} | <strong>Регион:</strong> {{ job.region }}</p>
+          <p><strong>Оплата:</strong>
+            {% if job.salary != '—' %}
+              {{ job.salary }} {{ job.currency }}
+            {% else %}
+              не указано
+            {% endif %}
+          </p>
+          <p><strong>Навыки:</strong> {{ job.skills|default:"не указаны" }}</p>
+          <p><strong>Дата публикации:</strong> {{ job.published_at }}</p>
+          <div class="mt-2">
+            <strong>Описание:</strong>
+            <div class="border p-2 small" style="max-height: 200px; overflow-y: auto;">
+              {{ job.description|safe }}
+            </div>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>За последние 24 часа вакансий не найдено.</p>
+  {% endif %}
 {% endblock %}

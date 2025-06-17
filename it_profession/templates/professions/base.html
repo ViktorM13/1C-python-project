@@ -4,40 +4,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>{% block title %}1С: Профессии{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <link rel="icon" type="image/x-icon" href="{% static 'profession/images/logo.png' %}">
+
+    <style>
+        :root {
+            --bs-body-bg: #f8f9fa; 
+            --bs-body-color: #212529; 
+            
+            --bs-primary-light: #e0f2f7;
+            --bs-primary-main: #3498db; 
+            --bs-primary-dark: #2c3e50; 
+            
+            --bs-sidebar-bg: #ffffff; 
+            --bs-sidebar-text: #212529; 
+            --bs-sidebar-link-hover: #e0f2f7; 
+            --bs-sidebar-link-active: #cce7f2; 
+
+            --bs-header-bg: var(--bs-primary-main); 
+            --bs-header-text: #fff; 
+            
+            --bs-footer-bg: var(--bs-primary-dark); 
+            --bs-footer-text: #adb5bd; 
+            
+            --bs-card-bg: #ffffff; 
+            --bs-card-border: #dee2e6; 
+        }
+
+        body {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+        }
+
+        .bg-primary { 
+            background-color: var(--bs-header-bg) !important;
+            color: var(--bs-header-text) !important;
+        }
+        .text-white {
+            color: var(--bs-header-text) !important;
+        }
+
+        .sidebar {
+            background-color: var(--bs-sidebar-bg) !important;
+            color: var(--bs-sidebar-text) !important;
+            min-height: calc(100vh - 56px);
+            position: sticky;
+            top: 0;
+            left: 0;
+            padding-top: 1rem;
+            border-right: 1px solid var(--bs-card-border);
+        }
+
+        .sidebar .nav-link {
+            color: var(--bs-sidebar-text) !important;
+            padding: 0.75rem 1rem;
+        }
+        .sidebar .nav-link:hover {
+            background-color: var(--bs-sidebar-link-hover);
+            border-radius: .25rem;
+        }
+        .sidebar .nav-link.active {
+            background-color: var(--bs-sidebar-link-active);
+            font-weight: bold;
+            color: var(--bs-primary-dark) !important;
+        }
+
+        .offcanvas {
+            background-color: var(--bs-sidebar-bg);
+            color: var(--bs-sidebar-text);
+        }
+
+        .offcanvas .offcanvas-body .nav-link {
+            color: var(--bs-sidebar-text) !important;
+        }
+        .offcanvas .offcanvas-body .nav-link:hover {
+            background-color: var(--bs-sidebar-link-hover);
+            border-radius: .25rem;
+        }
+        .offcanvas .offcanvas-body .nav-link.active {
+            background-color: var(--bs-sidebar-link-active);
+            font-weight: bold;
+            color: var(--bs-primary-dark) !important;
+        }
+
+
+        footer {
+            background-color: var(--bs-footer-bg) !important;
+            color: var(--bs-footer-text) !important;
+        }
+
+        main {
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+        }
+
+        .card {
+            background-color: var(--bs-card-bg);
+            border-color: var(--bs-card-border);
+            color: var(--bs-body-color);
+        }
+
+        @media (max-width: 767.98px) {
+            .sidebar {
+                display: none !important;
+            }
+            .offcanvas-backdrop {
+                z-index: 1045;
+            }
+        }
+        @media (min-width: 768px) {
+            .sidebar {
+                display: block !important;
+            }
+            .navbar-toggler-sidebar {
+                display: none !important;
+            }
+        }
+    </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
-    <header class="bg-primary text-white py-3">
-        <div class="container-fluid">
-            <img src="{% static 'profession/images/logo.png' %}" alt="Логотип 1С" height="40" style="margin-left: 1.5%;">
+    <header class="bg-primary text-white py-3 shadow-sm">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            <button class="btn btn-primary d-md-none navbar-toggler-sidebar" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas">
+                <i class="bi bi-list fs-3 text-white"></i> </button>
+
+            <img src="{% static 'profession/images/logo.png' %}" alt="Логотип 1С" height="40" style="margin-left: 0.5%;">
+
+            <h1 class="h4 mb-0 me-3 d-none d-sm-block">1С-Разработчик</h1>
         </div>
     </header>
+
     <div class="container-fluid flex-grow-1">
         <div class="row">
-            <nav class="col-md-3 col-lg-2 d-none d-md-block bg-light sidebar">
+            <nav class="col-md-3 col-lg-2 sidebar">
                 <div class="sidebar-sticky pt-3">
                     <ul class="nav flex-column">
-                        <li class="nav-link h5"><a class="nav-link h5" href="{% url 'professions:index' %}">Главная</a></li>
-                        <li class="nav-link h5"><a class="nav-link h5" href="{% url 'professions:general_stats' %}">Общая статистика</a></li>
-                        <li class="nav-link h5"><a class="nav-link h5" href="{% url 'professions:demand' %}">Востребованность</a></li>
-                        <li class="nav-link h5"><a class="nav-link h5" href="{% url 'professions:geography' %}">География</a></li>
-                        <li class="nav-link h5"><a class="nav-link h5" href="{% url 'professions:skills' %}">Навыки</a></li>
-                        <li class="nav-link h5"><a class="nav-link h5" href="{% url 'professions:latest_jobs' %}">Последние вакансии</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link h5 {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'professions' %}active{% endif %}"
+                               aria-current="page" href="{% url 'professions:index' %}">
+                                <i class="bi bi-house-door-fill me-2"></i> Главная
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link h5 {% if request.resolver_match.url_name == 'general_stats' and request.resolver_match.app_name == 'stats' %}active{% endif %}"
+                               href="{% url 'stats:general_stats' %}">
+                                <i class="bi bi-bar-chart-fill me-2"></i> Общая статистика
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link h5 {% if request.resolver_match.url_name == 'demand' and request.resolver_match.app_name == 'professions' %}active{% endif %}"
+                               href="{% url 'professions:demand' %}">
+                                <i class="bi bi-graph-up-arrow me-2"></i> Востребованность
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link h5 {% if request.resolver_match.url_name == 'geography' and request.resolver_match.app_name == 'professions' %}active{% endif %}"
+                               href="{% url 'professions:geography' %}">
+                                <i class="bi bi-geo-alt-fill me-2"></i> География
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link h5 {% if request.resolver_match.url_name == 'skills' and request.resolver_match.app_name == 'professions' %}active{% endif %}"
+                               href="{% url 'professions:skills' %}">
+                                <i class="bi bi-lightbulb-fill me-2"></i> Навыки
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link h5 {% if request.resolver_match.url_name == 'latest_jobs' and request.resolver_match.app_name == 'professions' %}active{% endif %}"
+                               href="{% url 'professions:latest_jobs' %}">
+                                <i class="bi bi-briefcase-fill me-2"></i> Последние вакансии
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>
+
+            <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="sidebarOffcanvasLabel">Навигация</h5>
+                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link h5 {% if request.resolver_match.url_name == 'index' and request.resolver_match.app_name == 'professions' %}active{% endif %}"
+                               aria-current="page" href="{% url 'professions:index' %}">
+                                <i class="bi bi-house-door-fill me-2"></i> Главная
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link h5 {% if request.resolver_match.url_name == 'general_stats' and request.resolver_match.app_name == 'stats' %}active{% endif %}"
+                               href="{% url 'stats:general_stats' %}">
+                                <i class="bi bi-bar-chart-fill me-2"></i> Общая статистика
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link h5 {% if request.resolver_match.url_name == 'demand' and request.resolver_match.app_name == 'professions' %}active{% endif %}"
+                               href="{% url 'professions:demand' %}">
+                                <i class="bi bi-graph-up-arrow me-2"></i> Востребованность
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link h5 {% if request.resolver_match.url_name == 'geography' and request.resolver_match.app_name == 'professions' %}active{% endif %}"
+                               href="{% url 'professions:geography' %}">
+                                <i class="bi bi-geo-alt-fill me-2"></i> География
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link h5 {% if request.resolver_match.url_name == 'skills' and request.resolver_match.app_name == 'professions' %}active{% endif %}"
+                               href="{% url 'professions:skills' %}">
+                                <i class="bi bi-lightbulb-fill me-2"></i> Навыки
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link h5 {% if request.resolver_match.url_name == 'latest_jobs' and request.resolver_match.app_name == 'professions' %}active{% endif %}"
+                               href="{% url 'professions:latest_jobs' %}">
+                                <i class="bi bi-briefcase-fill me-2"></i> Последние вакансии
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
             <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4 py-4">
                 {% block content %}{% endblock %}
             </main>
         </div>
     </div>
-    <footer class="bg-dark text-white text-center py-3 mt-auto">
+
+    <footer class="bg-dark text-white text-center py-3 mt-auto shadow-lg">
         <div class="container">
             Малкеров Виктор Евгеньевич, РИ-231003
         </div>
     </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

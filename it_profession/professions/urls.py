@@ -5,7 +5,6 @@ app_name = 'professions'
 
 urlpatterns = [
     path('', views.IndexView.as_view(), name='index'),
-    path('stats/', views.GeneralStatsView.as_view(), name='general_stats'),
     path('demand/', views.DemandView.as_view(), name='demand'),
     path('geography/', views.GeographyView.as_view(), name='geography'),
     path('skills/', views.SkillsView.as_view(), name='skills'),

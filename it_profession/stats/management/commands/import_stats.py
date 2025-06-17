@@ -12,6 +12,7 @@ from stats.models import GeneralStatistic
 
 CBR_URL = "https://www.cbr.ru/scripts/XML_daily.asp?date_req={date}"
 
+
 def collect_exchange_rates(dates):
     cache = {}
     for date in dates:
@@ -35,6 +36,7 @@ def collect_exchange_rates(dates):
             cache[key] = {'RUR': 1.0}
     return cache
 
+
 def salary_to_rub(row, cache):
     avg = pd.Series([row.salary_from, row.salary_to]).mean()
     if pd.isna(avg):
@@ -42,6 +44,7 @@ def salary_to_rub(row, cache):
     first_of_month = row.published_at.replace(day=1).date()
     rates = cache.get((first_of_month.year, first_of_month.month), {'RUR': 1.0})
     return avg * rates.get(row.salary_currency, 1.0)
+
 
 class Command(BaseCommand):
     help = 'Импортирует CSV и генерирует статистику с курсами ЦБ'
@@ -53,32 +56,40 @@ class Command(BaseCommand):
             self.stderr.write(f"CSV not found: {csv_path}")
             return
 
+        # 1. Читаем CSV и готовим даты
         df = pd.read_csv(csv_path, dtype={'key_skills': str}, low_memory=False)
         df['published_at'] = pd.to_datetime(df['published_at'], errors='coerce', utc=True)
         df = df.dropna(subset=['published_at'])
+        # Убираем tzinfo, чтобы не было предупреждений
         df['published_at'] = df['published_at'].dt.tz_localize(None)
         df['year'] = df['published_at'].dt.year
 
+        # Явно берём первый день каждого месяца
         df['pub_month'] = df['published_at'].apply(lambda dt: dt.replace(day=1).date())
         unique_dates = df['pub_month'].unique()
+
+        # 2. Скачиваем курсы лишь по уникальным датам
         cbr_cache = collect_exchange_rates(unique_dates)
 
+        # 3. Переводим зарплаты в рубли
         df['salary_rub'] = df.apply(lambda r: salary_to_rub(r, cbr_cache), axis=1)
         df['salary_rub'] = pd.to_numeric(df['salary_rub'], errors='coerce')
         df = df.dropna(subset=['salary_rub'])
         df = df[df['salary_rub'] <= 10_000_000]
 
+        # 4. Папка для графиков
         media_charts = base_dir / 'media' / 'statistics' / 'charts'
         media_charts.mkdir(parents=True, exist_ok=True)
 
-        # 1. Динамика зарплат по годам
+        # === Блок 1: Динамика зарплат ===
         ts_salary = df.groupby('year')['salary_rub'].mean().round()
-        html_salary = ts_salary.reset_index().to_html(index=False, float_format='%.0f', classes='table table-striped')
+        html_salary = ts_salary.reset_index().to_html(
+            index=False, float_format='%.0f', classes='table table-striped')
         fig, ax = plt.subplots()
         ax.plot(ts_salary.index, ts_salary.values, marker='o')
         ax.set_title('Динамика уровня зарплат по годам')
         ax.set_xlabel('Год')
-        ax.set_ylabel('Средняя зарплата, млн. ₽')
+        ax.set_ylabel('Средняя зарплата, ₽')
         ax.grid(True, linestyle='--', alpha=0.6)
         fig.savefig(media_charts / 'salary_trend.png', bbox_inches='tight')
         plt.close(fig)
@@ -91,9 +102,10 @@ class Command(BaseCommand):
             }
         )
 
-        # 2. Количество вакансий по годам
+        # === Блок 2: Количество вакансий ===
         ts_count = df.groupby('year').size()
-        html_count = ts_count.reset_index(name='vacancy_count').to_html(index=False, classes='table table-striped')
+        html_count = ts_count.reset_index(name='vacancy_count').to_html(
+            index=False, classes='table table-striped')
         fig, ax = plt.subplots()
         ax.bar(ts_count.index, ts_count.values)
         ax.set_title('Динамика количества вакансий по годам')
@@ -111,14 +123,16 @@ class Command(BaseCommand):
             }
         )
 
-        # 3. Уровень зарплат по городам (ТОП-20)
-        city_salary = df.groupby('area_name')['salary_rub'].mean().round().sort_values(ascending=False).head(20)
-        html_city_sal = city_salary.reset_index().to_html(index=False, float_format='%.0f', classes='table table-striped')
+        # === Блок 3: Зарплаты по городам ===
+        city_salary = df.groupby('area_name')['salary_rub'] \
+            .mean().round().sort_values(ascending=False).head(20)
+        html_city_sal = city_salary.reset_index().to_html(
+            index=False, float_format='%.0f', classes='table table-striped')
         fig, ax = plt.subplots(figsize=(6, 8))
         ax.barh(city_salary.index, city_salary.values)
         ax.invert_yaxis()
         ax.set_title('Уровень зарплат по городам (ТОП-20)')
-        ax.set_xlabel('Средняя зарплата, ₽')
+        ax.set_xlabel('Средняя зарплата, млн. ₽')
         ax.grid(True, linestyle='--', alpha=0.6, axis='x')
         fig.savefig(media_charts / 'city_salary.png', bbox_inches='tight')
         plt.close(fig)
@@ -131,11 +145,13 @@ class Command(BaseCommand):
             }
         )
 
-        # 4. Доля вакансий по городам (ТОП-20)
-        city_count = df.groupby('area_name').size().sort_values(ascending=False).head(20)
+        # === Блок 4: Доля вакансий по городам ===
+        city_count = df.groupby('area_name').size() \
+            .sort_values(ascending=False).head(20)
         total = city_count.sum()
         city_share = (city_count / total * 100).round(2)
-        html_city_share = city_share.reset_index(name='share').to_html(index=False, float_format='%.2f', classes='table table-striped')
+        html_city_share = city_share.reset_index(name='share').to_html(
+            index=False, float_format='%.2f', classes='table table-striped')
         fig, ax = plt.subplots(figsize=(8, 8))
         ax.pie(city_share.values, labels=city_share.index, autopct='%1.1f%%')
         ax.set_title('Доля вакансий по городам (ТОП-20)')
@@ -150,12 +166,13 @@ class Command(BaseCommand):
             }
         )
 
-        # 5. ТОП-20 навыков по годам (с нормализацией)
+        # === Блок 5: ТОП-20 навыков по годам ===
         df['key_skills'] = df['key_skills'].replace('', pd.NA)
         df_sk = df.dropna(subset=['key_skills']).copy()
-        df_sk['skills_list'] = df_sk['key_skills'].str.split(',').apply(
-            lambda skills: [s.strip().lower() for s in skills if s.strip()]
-        )
+        # Нормализация: split + strip + lower
+        df_sk['skills_list'] = df_sk['key_skills'] \
+            .str.split(',') \
+            .apply(lambda skills: [s.strip().lower() for s in skills if s.strip()])
 
         records = []
         skill_counts = {}
@@ -168,9 +185,11 @@ class Command(BaseCommand):
         top_skills = sorted(skill_counts, key=skill_counts.get, reverse=True)[:20]
         skill_df = pd.DataFrame(records, columns=['year', 'skill'])
         filtered = skill_df[skill_df['skill'].isin(top_skills)]
-        pivot = filtered.pivot_table(index='year', columns='skill', aggfunc='size', fill_value=0)
+        pivot = filtered.pivot_table(
+            index='year', columns='skill', aggfunc='size', fill_value=0)
 
-        html_skills = pivot.reset_index().to_html(index=False, classes='table table-striped')
+        html_skills = pivot.reset_index().to_html(
+            index=False, classes='table table-striped')
         fig, ax = plt.subplots(figsize=(12, 6))
         for skill in pivot.columns:
             ax.plot(pivot.index, pivot[skill], label=skill.title())
@@ -182,7 +201,6 @@ class Command(BaseCommand):
         fig.tight_layout()
         fig.savefig(media_charts / 'skills_by_year.png', bbox_inches='tight')
         plt.close(fig)
-
         GeneralStatistic.objects.update_or_create(
             name='skills_by_year',
             defaults={
@@ -192,4 +210,5 @@ class Command(BaseCommand):
             }
         )
 
-        self.stdout.write(self.style.SUCCESS('Все блоки статистики успешно созданы/обновлены.'))
+        self.stdout.write(self.style.SUCCESS(
+            'Все блоки статистики успешно созданы/обновлены.'))

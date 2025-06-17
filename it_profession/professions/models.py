@@ -18,3 +18,15 @@ class HHVacancy(models.Model):
 
     def __str__(self):
         return f"{self.title} — {self.company} ({self.published_at:%Y-%m-%d %H:%M})"
+
+class PageContent(models.Model):
+    slug  = models.SlugField(max_length=50, unique=True, help_text="Уникальный идентификатор страницы, например 'home'")
+    title = models.CharField(max_length=100, help_text="Заголовок страницы, выводится в теге h2")
+    body  = models.TextField(help_text="HTML‑контент страницы, можно вставлять p, img и т.д.")
+
+    class Meta:
+        verbose_name = "Контент страницы"
+        verbose_name_plural = "Контент для страниц"
+
+    def __str__(self):
+        return self.slug

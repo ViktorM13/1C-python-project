@@ -2,10 +2,15 @@ from django.utils import timezone
 from datetime import timedelta
 from django.views.generic import TemplateView
 from .models import HHVacancy
-
+from .models import PageContent
 
 class IndexView(TemplateView):
     template_name = 'professions/index.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page'] = PageContent.objects.get(slug='home')
+        return ctx
 
 class GeneralStatsView(TemplateView):
     template_name = 'professions/general_stats.html'

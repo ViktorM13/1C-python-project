@@ -1,0 +1,26 @@
+{% extends 'professions/base.html' %}
+{% load static %}
+
+{% block title %}География{% endblock %}
+
+{% block content %}
+  <h2>География</h2>
+
+  {% if blocks %}
+    {% for block in blocks %}
+      <section class="my-5">
+        <h3>{{ block.title }}</h3>
+        <div class="table-responsive">
+          {{ block.table_html|safe }}
+        </div>
+        {% if block.chart_image %}
+          <div class="my-3 text-center">
+            <img src="{{ block.chart_image.url }}" alt="{{ block.title }}" class="img-fluid">
+          </div>
+        {% endif %}
+      </section>
+    {% endfor %}
+  {% else %}
+    <p>Статистических данных пока нет.</p>
+  {% endif %}
+{% endblock %}

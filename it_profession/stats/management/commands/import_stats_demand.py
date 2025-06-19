@@ -53,13 +53,11 @@ class Command(BaseCommand):
             self.stderr.write(f"CSV не найден: {csv_f}")
             return
 
-        # Чистим старые графики
         charts_dir = base / 'media' / 'statistics' / 'demand'
         if charts_dir.exists():
             shutil.rmtree(charts_dir)
         charts_dir.mkdir(parents=True, exist_ok=True)
 
-        # Читаем данные
         df = pd.read_csv(csv_f, dtype={'key_skills': str}, low_memory=False)
         df['published_at'] = pd.to_datetime(df['published_at'], errors='coerce', utc=True)
         df = df.dropna(subset=['published_at'])
@@ -67,14 +65,12 @@ class Command(BaseCommand):
         df = df[mask].copy()
         df['year'] = df['published_at'].dt.year
 
-        # Конвертация в рубли
         cache = CBRCache()
         df['salary_rub'] = df.apply(lambda r: to_rub(r, cache), axis=1)
         df['salary_rub'] = pd.to_numeric(df['salary_rub'], errors='coerce')
         df = df.dropna(subset=['salary_rub'])
         df = df[df['salary_rub'] <= 10_000_000]
 
-        # 1. Динамика уровня зарплат по годам
         ts = df.groupby('year')['salary_rub'].mean().round()
         html = ts.reset_index().to_html(index=False, float_format='%.0f', classes='table table-striped')
         fig, ax = plt.subplots()
@@ -92,7 +88,6 @@ class Command(BaseCommand):
             }
         )
 
-        # 2. Динамика количества вакансий по годам
         tc = df.groupby('year').size()
         html2 = tc.reset_index(name='vacancy_count').to_html(index=False, classes='table table-striped')
         fig, ax = plt.subplots()

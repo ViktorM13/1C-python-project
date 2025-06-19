@@ -58,18 +58,15 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         base = Path(settings.BASE_DIR)
-        # удаляем старые данные и графики
         GeneralStatistic.objects.all().delete()
         charts = base / 'media' / 'statistics' / 'charts'
         if charts.exists(): shutil.rmtree(charts)
         charts.mkdir(parents=True, exist_ok=True)
 
-        # загружаем список стран
         countries_path = base / COUNTRIES_FILE
         with open(countries_path, encoding='utf-8') as f:
             COUNTRIES = {line.strip() for line in f if line.strip()}
 
-        # читаем CSV
         csv_file = base / 'data' / 'vacancies_2024.csv'
         if not csv_file.exists():
             self.stderr.write(f"CSV not found: {csv_file}")
@@ -79,42 +76,35 @@ class Command(BaseCommand):
         df.dropna(subset=['published_at'], inplace=True)
         df['published_at'] = df['published_at'].dt.tz_localize(None)
 
-        # фильтруем страны
         df = df[~df['area_name'].isin(COUNTRIES)]
         df['year'] = df['published_at'].dt.year
 
-        # курсы ЦБ
         df['pub_month'] = df['published_at'].apply(lambda d: d.replace(day=1).date())
         cache = collect_exchange_rates(df['pub_month'].unique())
 
-        # конвертация зарплат
         df['salary_rub'] = df.apply(lambda r: convert_salary_to_rub(r, cache), axis=1)
         df['salary_rub'] = pd.to_numeric(df['salary_rub'], errors='coerce')
         df.dropna(subset=['salary_rub'], inplace=True)
         df = df[df['salary_rub'] <= 10_000_000]
 
-        # 1. динамика зарплат
         ts = df.groupby('year')['salary_rub'].mean().round()
         html = ts.reset_index().to_html(index=False, float_format='%.0f', classes='table table-striped')
         fig,ax = plt.subplots(); ax.plot(ts.index,ts.values,marker='o'); ax.set(title='Динамика уровня зарплат по годам',xlabel='Год',ylabel='Средняя зарплата, ₽'); ax.grid(True, linestyle='--', alpha=0.6)
         fig.savefig(charts/'salary_trend.png',bbox_inches='tight'); plt.close(fig)
         GeneralStatistic.objects.create(name='salary_trend', title='Динамика уровня зарплат по годам', table_html=html, chart_image='statistics/charts/salary_trend.png')
 
-        # 2. динамика вакансий
         tc = df.groupby('year').size()
         html = tc.reset_index(name='vacancy_count').to_html(index=False,classes='table table-striped')
         fig,ax=plt.subplots(); ax.bar(tc.index,tc.values); ax.set(title='Динамика количества вакансий по годам',xlabel='Год',ylabel='Количество вакансий'); ax.grid(True, linestyle='--', alpha=0.6)
         fig.savefig(charts/'count_trend.png',bbox_inches='tight'); plt.close(fig)
         GeneralStatistic.objects.create(name='count_trend', title='Динамика количества вакансий по годам', table_html=html, chart_image='statistics/charts/count_trend.png')
 
-        # 3. топ-20 городов по зарплате
         cs = df.groupby('area_name')['salary_rub'].mean().round().nlargest(20)
         html = cs.reset_index().to_html(index=False,float_format='%.0f',classes='table table-striped')
         fig,ax=plt.subplots(figsize=(6,8)); ax.barh(cs.index,cs.values); ax.invert_yaxis(); ax.set(title='Уровень зарплат по городам (ТОП-20)',xlabel='Средняя зарплата, ₽'); ax.grid(True, linestyle='--', alpha=0.6, axis='x')
         fig.savefig(charts/'city_salary.png',bbox_inches='tight'); plt.close(fig)
         GeneralStatistic.objects.create(name='city_salary', title='Уровень зарплат по городам (ТОП-20)', table_html=html, chart_image='statistics/charts/city_salary.png')
 
-        # 4. доля вакансий топ-20
         vc = df['area_name'].value_counts().nlargest(20)
         share = (vc/vc.sum()*100).round(2)
         html = share.reset_index(name='share').to_html(index=False, float_format='%.2f',classes='table table-striped')
@@ -122,7 +112,6 @@ class Command(BaseCommand):
         fig.savefig(charts/'city_share.png',bbox_inches='tight'); plt.close(fig)
         GeneralStatistic.objects.create(name='city_share',title='Доля вакансий по городам (ТОП-20)', table_html=html, chart_image='statistics/charts/city_share.png')
 
-        # 5. топ-20 навыков по годам
         df['key_skills']=df['key_skills'].replace('',pd.NA)
         sk=df.dropna(subset=['key_skills']).copy(); sk['skills_list']=sk['key_skills'].str.split('\n').apply(lambda lst:[s.strip().lower() for s in lst if s.strip()])
         from collections import Counter; rec=[]

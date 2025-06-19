@@ -12,12 +12,6 @@ class IndexView(TemplateView):
         ctx['page'] = PageContent.objects.get(slug='home')
         return ctx
 
-class GeographyView(TemplateView):
-    template_name = 'professions/geography.html'
-
-class SkillsView(TemplateView):
-    template_name = 'professions/skills.html'
-
 class LatestJobsView(TemplateView):
     template_name = 'professions/latest_jobs.html'
 

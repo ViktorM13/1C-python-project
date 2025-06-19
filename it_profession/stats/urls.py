@@ -1,10 +1,11 @@
 from django.urls import path
-from .views import GeneralStatsView, DemandView, GeographyView
+from .views import GeneralStatsView, DemandView, GeographyView, SkillView
 
 app_name = 'stats'
 
 urlpatterns = [
     path('charts/', GeneralStatsView.as_view(), name='general_stats'),
     path('demand/', DemandView.as_view(), name='demand'),
-    path('geography/', GeographyView.as_view(),   name='geography')
+    path('geography/', GeographyView.as_view(),   name='geography'),
+    path('skills/', SkillView.as_view(), name='skills')
 ]

@@ -1,7 +1,5 @@
 from django.views.generic import TemplateView
-from .models import GeneralStatistic
-from .models import DemandStatistic
-from .models import GeographyStatistic
+from .models import GeneralStatistic, DemandStatistic, GeographyStatistic, SkillStatistic
 
 class GeneralStatsView(TemplateView):
     template_name = 'stats/general_stats.html'
@@ -25,4 +23,11 @@ class GeographyView(TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['blocks'] = GeographyStatistic.objects.all()
+        return ctx
+
+class SkillView(TemplateView):
+    template_name = 'stats/skills.html'
+    def get_context_data(self, **kw):
+        ctx = super().get_context_data(**kw)
+        ctx['blocks'] = SkillStatistic.objects.all()
         return ctx

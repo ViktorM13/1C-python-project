@@ -1,0 +1,28 @@
+{% extends 'professions/base.html' %}
+{% load static %}
+
+{% block title %}Востребованность{% endblock %}
+
+{% block content %}
+  <h2>Востребованность</h2>
+
+  {% if blocks %}
+    {% for b in blocks %}
+      <section class="my-5">
+        <h3>{{ b.title }}</h3>
+        <div class="table-responsive">
+          {{ b.table_html|safe }}
+        </div>
+        {% if b.chart_image %}
+          <div class="my-3 text-center">
+            <img src="{{ b.chart_image.url }}"
+                 alt="{{ b.title }}"
+                 class="img-fluid">
+          </div>
+        {% endif %}
+      </section>
+    {% endfor %}
+  {% else %}
+    <p>Данных о востребованности пока нет.</p>
+  {% endif %}
+{% endblock %}

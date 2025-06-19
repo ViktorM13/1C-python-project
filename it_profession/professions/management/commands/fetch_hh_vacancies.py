@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         HHVacancy.objects.all().delete()
 
-        keywords = ['1с разработчик', '1c разработчик', '1с', '1c', '1 c', '1 с']
+        keywords = ['1C разработчик', '1С разработчик', '1c разработчик', '1с разработчик']
         query = ' OR '.join(keywords)
         date_from = (datetime.utcnow() - timedelta(days=1)).isoformat() + 'Z'
 
@@ -30,6 +30,11 @@ class Command(BaseCommand):
             detail.raise_for_status()
             d = detail.json()
 
+            title = d.get('name', '')
+            title_lower = title.lower()
+            if 'разработчик' not in title_lower and 'программист' not in title_lower:
+                continue
+
             salary_data = d.get('salary') or {}
             salary = salary_data.get('from') or salary_data.get('to') or ''
             currency = salary_data.get('currency') or ''
@@ -39,7 +44,7 @@ class Command(BaseCommand):
             published_at = dj_timezone.make_aware(naive_dt, timezone.utc)
 
             HHVacancy.objects.create(
-                title=d.get('name', ''),
+                title=title,
                 description=d.get('description', ''),
                 skills=', '.join(s.get('name') for s in d.get('key_skills', [])),
                 company=d.get('employer', {}).get('name', ''),
@@ -50,4 +55,6 @@ class Command(BaseCommand):
                 published_at=published_at,
             )
 
-        self.stdout.write(self.style.SUCCESS('Вакансии успешно обновлены (старые удалены, новые загружены).'))
+        self.stdout.write(self.style.SUCCESS(
+            'Вакансии успешно обновлены (старые удалены, новые загружены).'
+        ))

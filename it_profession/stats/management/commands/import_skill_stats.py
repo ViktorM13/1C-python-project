@@ -33,25 +33,34 @@ class Command(BaseCommand):
         df['year'] = df['published_at'].dt.year
 
         df = df.dropna(subset=['key_skills']).copy()
-        df['skills_list'] = df['key_skills'].str.split(',') \
-            .apply(lambda lst: list({s.strip().lower() for s in lst if s.strip()}))
+        df['skills_list'] = (
+            df['key_skills']
+              .str.split(',')
+              .apply(lambda lst: list({s.strip().lower() for s in lst if s.strip()}))
+        )
 
         records = []
         for _, row in df.iterrows():
             for skill in row['skills_list']:
                 records.append((row['year'], skill))
-        sdf = pd.DataFrame(records, columns=['year', 'skill'])
+        sdf = pd.DataFrame(records, columns=['Год', 'Навык'])
 
-        raw_top20 = [s for s, _ in Counter(sdf['skill']).most_common(20)]
+        raw_top20 = [s for s, _ in Counter(sdf['Навык']).most_common(20)]
         top20 = list(OrderedDict.fromkeys(raw_top20))
 
         piv = (
-            sdf[sdf['skill'].isin(top20)]
-            .pivot_table(index='year', columns='skill', aggfunc='size', fill_value=0)
+            sdf[sdf['Навык'].isin(top20)]
+            .pivot_table(index='Год', columns='Навык', aggfunc='size', fill_value=0)
             .reindex(columns=top20, fill_value=0)
+            .rename_axis(None, axis='columns')  
         )
 
-        html = piv.reset_index().to_html(index=False, classes='table table-striped')
+        table = piv.reset_index()
+        html = table.to_html(
+            index=False,
+            classes='table table-striped',
+            justify='left'
+        )
 
         fig, ax = plt.subplots(figsize=(12, 6))
         for skill in top20:

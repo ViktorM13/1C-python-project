@@ -1,4 +1,3 @@
-import os
 import shutil
 from pathlib import Path
 import requests
@@ -22,14 +21,15 @@ class CBRCache:
         if key in self.cache:
             return self.cache[key]
         ds = date_obj.strftime("01/%m/%Y")
-        r = requests.get(CBR_URL.format(date=ds), timeout=5); r.raise_for_status()
+        r = requests.get(CBR_URL.format(date=ds), timeout=5)
+        r.raise_for_status()
         tree = ET.fromstring(r.content)
         rates = {'RUR':1.0}
         for v in tree.findall('Valute'):
             code = v.find('CharCode').text
             nom  = int(v.find('Nominal').text)
-            val  = float(v.find('Value').text.replace(',','.'))
-            rates[code] = val/nom
+            val  = float(v.find('Value').text.replace(',', '.'))
+            rates[code] = val / nom
         self.cache[key] = rates
         return rates
 
@@ -37,7 +37,7 @@ def to_rub(row, cache):
     frm, to_ = row.salary_from, row.salary_to
     if pd.isna(frm) and pd.isna(to_):
         return None
-    avg = frm if pd.isna(to_) else to_ if pd.isna(frm) else (frm+to_)/2
+    avg = frm if pd.isna(to_) else to_ if pd.isna(frm) else (frm + to_) / 2
     cur = row.salary_currency or 'RUR'
     pub = row.published_at.replace(day=1).date()
     rate = cache.get(pub).get(cur, 1.0)
@@ -47,16 +47,18 @@ class Command(BaseCommand):
     help = 'Импортирует статистику «Востребованность» для 1С‑разработчика'
 
     def handle(self, *args, **opts):
-        base = Path(settings.BASE_DIR)
-        csv_f = base / 'data' / 'vacancies_2024.csv'
+        base       = Path(settings.BASE_DIR)
+        csv_f      = base / 'data' / 'vacancies_2024.csv'
+        charts_dir = base / 'media' / 'statistics' / 'demand'
+
         if not csv_f.exists():
             self.stderr.write(f"CSV не найден: {csv_f}")
             return
 
-        charts_dir = base / 'media' / 'statistics' / 'demand'
         if charts_dir.exists():
             shutil.rmtree(charts_dir)
         charts_dir.mkdir(parents=True, exist_ok=True)
+        DemandStatistic.objects.all().delete()
 
         df = pd.read_csv(csv_f, dtype={'key_skills': str}, low_memory=False)
         df['published_at'] = pd.to_datetime(df['published_at'], errors='coerce', utc=True)
@@ -72,10 +74,23 @@ class Command(BaseCommand):
         df = df[df['salary_rub'] <= 10_000_000]
 
         ts = df.groupby('year')['salary_rub'].mean().round()
-        html = ts.reset_index().to_html(index=False, float_format='%.0f', classes='table table-striped')
+        table1 = ts.reset_index().rename(columns={
+            'year': 'Год',
+            'salary_rub': 'Средняя зарплата (₽)'
+        })
+        html1 = table1.to_html(
+            index=False,
+            float_format='%.0f',
+            classes='table table-striped',
+            justify='left'
+        )
         fig, ax = plt.subplots()
         ax.plot(ts.index, ts.values, marker='o')
-        ax.set(title='Динамика зарплат 1С‑разработчика по годам', xlabel='Год', ylabel='Средняя зарплата, ₽')
+        ax.set(
+            title='Динамика зарплат 1С‑разработчика по годам',
+            xlabel='Год',
+            ylabel='Средняя зарплата, ₽'
+        )
         ax.grid(True, linestyle='--', alpha=0.6)
         fig.savefig(charts_dir / 'demand_salary_trend.png', bbox_inches='tight')
         plt.close(fig)
@@ -83,16 +98,27 @@ class Command(BaseCommand):
             name='demand_salary_trend',
             defaults={
                 'title': 'Динамика зарплат 1С‑разработчика по годам',
-                'table_html': html,
+                'table_html': html1,
                 'chart_image': 'statistics/demand/demand_salary_trend.png'
             }
         )
 
         tc = df.groupby('year').size()
-        html2 = tc.reset_index(name='vacancy_count').to_html(index=False, classes='table table-striped')
+        table2 = tc.reset_index(name='Количество вакансий').rename(columns={
+            'year': 'Год'
+        })
+        html2 = table2.to_html(
+            index=False,
+            classes='table table-striped',
+            justify='left'
+        )
         fig, ax = plt.subplots()
         ax.bar(tc.index, tc.values)
-        ax.set(title='Динамика количества вакансий 1С‑разработчика по годам', xlabel='Год', ylabel='Число вакансий')
+        ax.set(
+            title='Динамика количества вакансий 1С‑разработчика по годам',
+            xlabel='Год',
+            ylabel='Число вакансий'
+        )
         ax.grid(True, linestyle='--', alpha=0.6)
         fig.savefig(charts_dir / 'demand_count_trend.png', bbox_inches='tight')
         plt.close(fig)

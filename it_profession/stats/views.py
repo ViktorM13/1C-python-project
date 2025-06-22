@@ -1,9 +1,7 @@
 from django.views.generic import TemplateView
-from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import GeneralStatistic, DemandStatistic, GeographyStatistic, SkillStatistic
 
-class GeneralStatsView(LoginRequiredMixin, TemplateView):
-    login_url = 'login'
+class GeneralStatsView(TemplateView):
     template_name = 'stats/general_stats.html'
 
     def get_context_data(self, **kwargs):
@@ -11,8 +9,7 @@ class GeneralStatsView(LoginRequiredMixin, TemplateView):
         ctx['blocks'] = GeneralStatistic.objects.all()
         return ctx
 
-class DemandView(LoginRequiredMixin, TemplateView):
-    login_url = 'login'
+class DemandView(TemplateView):
     template_name = 'stats/demand.html'
 
     def get_context_data(self, **kwargs):
@@ -20,8 +17,7 @@ class DemandView(LoginRequiredMixin, TemplateView):
         ctx['blocks'] = DemandStatistic.objects.all()
         return ctx
 
-class GeographyView(LoginRequiredMixin, TemplateView):
-    login_url = 'login'
+class GeographyView(TemplateView):
     template_name = 'stats/geography.html'
 
     def get_context_data(self, **kwargs):
@@ -29,8 +25,7 @@ class GeographyView(LoginRequiredMixin, TemplateView):
         ctx['blocks'] = GeographyStatistic.objects.all()
         return ctx
 
-class SkillView(LoginRequiredMixin, TemplateView):
-    login_url = 'login'
+class SkillView(TemplateView):
     template_name = 'stats/skills.html'
 
     def get_context_data(self, **kw):

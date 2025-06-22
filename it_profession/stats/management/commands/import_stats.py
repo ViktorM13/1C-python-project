@@ -158,7 +158,7 @@ class Command(BaseCommand):
         })
         html4 = table4.to_html(index=False, classes='table table-striped', justify='left')
         fig, ax = plt.subplots(figsize=(8, 8))
-        ax.pie(share.values, labels=share.index, autopct='%1.1f%%')
+        ax.pie(share.values, labels=share.index, autopct=None)
         ax.set_title('Доля вакансий по городам (ТОП-20)')
         fig.savefig(charts / 'city_share.png', bbox_inches='tight')
         plt.close(fig)

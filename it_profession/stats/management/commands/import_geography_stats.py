@@ -123,7 +123,7 @@ class Command(BaseCommand):
             justify='left'
         )
         fig, ax = plt.subplots(figsize=(8, 8))
-        ax.pie(share.values, labels=share.index, autopct='%1.1f%%')
+        ax.pie(share.values, labels=share.index, autopct=None)
         ax.set_title('Доля вакансий по городам (ТОП-20)')
         fig.savefig(charts / 'geo_share.png', bbox_inches='tight')
         plt.close(fig)

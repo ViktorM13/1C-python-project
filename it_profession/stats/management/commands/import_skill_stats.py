@@ -2,6 +2,7 @@ import shutil
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
+import itertools # Добавим для цикличности по стилям линий
 
 from collections import Counter, OrderedDict
 
@@ -52,7 +53,7 @@ class Command(BaseCommand):
             sdf[sdf['Навык'].isin(top20)]
             .pivot_table(index='Год', columns='Навык', aggfunc='size', fill_value=0)
             .reindex(columns=top20, fill_value=0)
-            .rename_axis(None, axis='columns')  
+            .rename_axis(None, axis='columns')
         )
 
         table = piv.reset_index()
@@ -62,17 +63,36 @@ class Command(BaseCommand):
             justify='left'
         )
 
-        fig, ax = plt.subplots(figsize=(12, 6))
+        # ----- ИЗМЕНЕНИЯ НАЧИНАЮТСЯ ЗДЕСЬ -----
+
+        # Различные стили линий и маркеры
+        linestyles = ['-', '--', ':', '-.']
+        markers = ['o', 's', 'D', '^', 'v', 'p', 'h', '*', 'X']
+        # Используем itertools.cycle, чтобы циклически проходить по стилям/маркерам
+        style_cycle = itertools.cycle(linestyles)
+        marker_cycle = itertools.cycle(markers)
+
+
+        fig, ax = plt.subplots(figsize=(18, 12)) # Увеличение размера рисунка (например, 15x8)
+
         for skill in top20:
-            ax.plot(piv.index, piv[skill], label=skill.title())
+            # Применяем различные стили и маркеры
+            ax.plot(piv.index, piv[skill], label=skill.title(),
+                    linestyle=next(style_cycle), marker=next(marker_cycle), markersize=5) # Добавлен linestyle и marker
         ax.set(
             title='ТОП‑20 навыков по годам для 1С‑разработчика',
             xlabel='Год',
             ylabel='Число упоминаний'
         )
         ax.grid(True, linestyle='--', alpha=0.6)
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-        fig.tight_layout()
+
+        # Изменение расположения легенды: вниз, по центру, за пределами графика
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.10),
+                  fancybox=True, shadow=True, ncol=5) # ncol=5 для размещения в 5 колонок
+
+        fig.tight_layout(rect=[0, 0.15, 1, 1]) # Корректировка макета, чтобы легенда поместилась снизу
+
+        # ----- ИЗМЕНЕНИЯ ЗАВЕРШАЮТСЯ ЗДЕСЬ -----
 
         out_path = charts / 'skills_by_year.png'
         fig.savefig(out_path, bbox_inches='tight')
